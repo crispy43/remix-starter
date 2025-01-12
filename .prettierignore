@@ -1,0 +1,4 @@
+node_modules/
+build/
+/app/components/ui
+/app/components/icons

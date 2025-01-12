@@ -1,0 +1,12 @@
+# compiled output
+/.cache
+/node_modules
+/build
+.eslintcache
+
+# OS
+.DS_Store
+
+# dotenv environment variable files
+.env
+.env.local

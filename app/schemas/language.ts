@@ -7,7 +7,7 @@ export const updateLanguageSchema = {
   properties: {
     language: {
       type: 'string',
-      description: 'The language code to set.',
+      description: '변경하려는 언어 코드',
     },
   },
   required: ['language'],

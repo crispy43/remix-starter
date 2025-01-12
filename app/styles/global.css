@@ -83,28 +83,6 @@
   }
 }
 
-:root {
-  --tablet-min-width: 768px;
-  --laptop-min-width: 1280px;
-  --desktop-min-width: 1680px;
-}
-
 html {
   font-size: 16px;
-
-  @media only screen and (max-width: calc(var(--laptop-min-width) - 1px)) {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-    ::-webkit-scrollbar {
-      display: none;
-    }
-  }
-}
-
-body {
-  overflow-x: hidden;
-
-  @media only screen and (min-width: var(--laptop-min-width)) {
-    overflow-x: auto;
-  }
 }

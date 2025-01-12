@@ -1,5 +1,7 @@
 import { ErrorObject } from 'ajv';
 
+import { ToJson } from '~/common/types';
+
 // * FormData 객체 추출
 export const parseFormData = async <T = any>(request: Request) => {
   const formData = await request.formData();
@@ -7,14 +9,14 @@ export const parseFormData = async <T = any>(request: Request) => {
 };
 
 // * JSON 응답 생성 (Remix에서 json 함수가 deprecated 됨에 따라 대체)
-export const json = (data: any, options?: ResponseInit) => {
+export const json = <T = any>(data: T, options?: ResponseInit) => {
   return new Response(JSON.stringify(data), {
     ...options,
     headers: {
       'Content-Type': 'application/json',
       ...options?.headers,
     },
-  });
+  }) as ToJson<T>;
 };
 
 // * Ajv 유효성 검사 에러 응답

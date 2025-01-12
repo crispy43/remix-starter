@@ -125,7 +125,20 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 };
 ```
 
-`localize()` 함수를 사용할 때, 위 코드처럼 `/app/locales/types.d.ts` 파일에 정의된 타입을 제네릭으로 주입하여 사용하는 언어셋 `t`의 타입 추론을 할 수 있습니다. 화면에 언어 텍스트 적용 아래 코드처럼 `t`를 리믹스의 `useLoaderData()` 훅으로 가져와서 사용합니다.
+`localize()` 함수를 사용할 때, 위 코드처럼 `/app/locales/types.d.ts` 파일에 정의된 타입을 제네릭으로 주입하여 사용하는 언어셋 `t`의 타입 추론을 할 수 있습니다. JSON 언어 파일을 생성할 때 `/app/locales/types.d.ts`에 타입 정의도 함께 해주면 됩니다.
+
+```json
+{
+  "welcome": "Remix에 오신 것을 환영합니다!"
+}
+```
+
+```typescript
+// /app/locales/types.d.ts
+export type WelcomeJson = typeof import('../locales/en/welcome.json');
+```
+
+화면에 언어 텍스트 적용 아래 코드처럼 `t`를 리믹스의 `useLoaderData()` 훅으로 가져와서 사용합니다.
 
 ```tsx
 // /app/locales/en/welcome.json = { "welcome": "Welcome to Remix!" }
@@ -143,6 +156,8 @@ export default function Index() {
   // 언어가 ko인 경우 <p>Remix에 오신 것을 환영합니다!</p>
 }
 ```
+
+언어를 추가해야 하는 경우 `/app/common/constants.ts` 상수 파일의 `LANGUAGES` 배열에 언어 코드를 추가합니다. 기본 언어 코드는 `DEFAULT_LANGUAGE` 값으로 설정합니다.
 
 #### useLanguage
 

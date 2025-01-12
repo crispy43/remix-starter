@@ -1,6 +1,7 @@
 import { resolveAcceptLanguage } from 'resolve-accept-language';
 
 import { DEFAULT_LANGUAGE, LANGUAGES } from '~/common/constants';
+import { CommonJson } from '~/locales/types';
 
 import { getLanguageSession } from '../services/session';
 
@@ -22,7 +23,10 @@ export const isLanguage = (language: string) =>
   LANGUAGES.map((lang) => lang.split('-')[0]).includes(language);
 
 // * 현지화 번역 언어셋
-export const localize = async (request: Request, namespace = 'common') => {
+export const localize: <T>(
+  request: Request,
+  namespace: string,
+) => Promise<CommonJson & T> = async (request, namespace = 'common') => {
   const languageSession = await getLanguageSession(request);
   const language = languageSession.getLanguage();
   const commonTranslations = await import(`../../locales/${language}/common.json`);

@@ -43,7 +43,7 @@ yarn build
 yarn start
 ```
 
-(참고: `yarn build`후에 `yarn start`로 실행하게 되면 더 이상 .env 파일의 환경 변수는 참고되지 않습니다)
+(`yarn build`후에 `yarn start`로 실행하게 되면 더 이상 .env 파일의 환경 변수는 참조되지 않습니다)
 
 ## 구조
 
@@ -71,8 +71,9 @@ yarn start
 │   ├── hooks               # 커스텀 훅
 │   ├── lib                 # 유틸리티
 │   ├── locales             # 다국어 언어셋 폴더
-│   │   ├── en              # 영어
-│   │   └── ko              # 한국어
+│   │   ├── en              # 영어 네임스페이스 언어셋
+│   │   ├── ko              # 한국어 네임스페이스 언어셋
+│   │   └── types.d.ts      # 언어 JSON 파일 타입 정의
 │   ├── root.tsx            # 리믹스 Root 파일
 │   ├── routes              # 리믹스 Routes 폴더
 │   ├── schemas             # JSON Schema 폴더
@@ -94,7 +95,7 @@ yarn start
 
 ### 라이트&다크 테마
 
-테마는 `/app/hooks/use-theme.tsx`의 `useTheme` 훅을 사용합니다.
+테마는 `/app/hooks/use-theme.tsx`의 `useTheme`훅을 리액트 컴포넌트에서 사용합니다.
 
 ```typescript
 import { useTheme } from '~/hooks/use-theme';
@@ -105,3 +106,52 @@ const [theme, setTheme] = useTheme();
 `theme`의 기본 값은 시스템 테마를 따라갑니다. `setTheme()`로 테마를 변경하면 세션에 영구 저장되어 다음 접속때에도 동일한 테마가 유지됩니다.
 
 ### 다국어 현지화
+
+i18n 관련 라이브러리를 사용하지 않지만, 본 프로젝트에서는 리믹스 프레임워크의 SSR 형태에 맞게 다국어 옵션을 사용할 수 있습니다. i18n을 사용하는 것과 유사하지만 서버사이드에서 언어 텍스트가 먼저 렌더링되므로 i18n 보다 정적입니다.
+
+#### localize
+
+언어별 텍스트 정의는 `/app/locales/{languageCode}/` 경로에 JSON 파일로 저장하면 됩니다. 영어는 `/app/locales/en/`, 한국어는 `/app/locales/ko/` 아래에 JSON 파일을 저장하는 식입니다. `common.json`은 공통 언어 파일로 기본 네임스페이스가 되고 다른 네임스페이스에 언어 정의를 상속합니다. 이외 파일들은 각 파일 명으로 네임스페이스가 지정됩니다. 예를 들어 `welcome.json`파일은 네임스페이스가 `welcome`이 되므로 welcome 언어셋을 가져오려면 리믹스 `loader` 구문에서 아래 코드처럼 가져옵니다.
+
+```typescript
+import { LoaderFunctionArgs } from '@remix-run/node';
+
+import { localize } from '~/.server/lib/localization';
+import { WelcomeJson } from '~/locales/types';
+
+export const loader = async ({ request }: LoaderFunctionArgs) => {
+  const t = await localize<WelcomeJson>(request, 'welcome');
+  return { t };
+};
+```
+
+`localize()` 함수를 사용할 때, 위 코드처럼 `/app/locales/types.d.ts` 파일에 정의된 타입을 제네릭으로 주입하여 사용하는 언어셋 `t`의 타입 추론을 할 수 있습니다. 화면에 언어 텍스트 적용 아래 코드처럼 `t`를 리믹스의 `useLoaderData()` 훅으로 가져와서 사용합니다.
+
+```tsx
+// /app/locales/en/welcome.json = { "welcome": "Welcome to Remix!" }
+// /app/locales/ko/welcome.json = { "welcome": "Remix에 오신 것을 환영합니다!" }
+
+export const loader = async ({ request }: LoaderFunctionArgs) => {
+  const t = await localize<WelcomeJson>(request, 'welcome');
+  return { t };
+};
+
+export default function Index() {
+  const { t } = useLoaderData<typeof loader>();
+  return <p>{t.welcome}</p>;
+  // 언어가 en인 경우 <p>Welcome to Remix!</p>
+  // 언어가 ko인 경우 <p>Remix에 오신 것을 환영합니다!</p>
+}
+```
+
+#### useLanguage
+
+언어 코드 확인과 변경은 `/app/hooks/use-language.ts`의 `useLanguage`훅을 리액트 컴포넌트에서 사용합니다.
+
+```typescript
+import { useLanguage } from '~/hooks/use-language';
+
+const [language, setLanguage] = useLanguage();
+```
+
+`language`로 현재 적용된 언어 코드를 확인할 수 있습니다. 언어 변경은 `setLanguage('en')`처럼 변경할 언어 코드를 `setLanguage`함수의 인자로 사용하면 됩니다.

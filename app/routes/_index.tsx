@@ -1,4 +1,4 @@
-import type { LoaderFunctionArgs, MetaFunction } from '@remix-run/node';
+import { LoaderFunctionArgs, MetaFunction } from '@remix-run/node';
 import { useLoaderData } from '@remix-run/react';
 
 import { localize } from '~/.server/lib/localization';
@@ -6,9 +6,10 @@ import { Theme } from '~/common/constants';
 import { Button } from '~/components/ui/button';
 import { useLanguage } from '~/hooks/use-language';
 import { useTheme } from '~/hooks/use-theme';
+import { WelcomeJson } from '~/locales/types';
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
-  const t = await localize(request, 'welcome');
+  const t = await localize<WelcomeJson>(request, 'welcome');
   return { t };
 };
 

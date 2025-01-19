@@ -1,8 +1,23 @@
 # Remix Starter
 
-[tailwindcss](https://tailwindcss.com/)와 [shadcn/ui](https://ui.shadcn.com/)가 적용된 Remix 스타터 탬플릿입니다.
+[tailwindcss](https://tailwindcss.com/)와 [shadcn/ui](https://ui.shadcn.com/)가 적용된 [Remix](https://remix.run/) 스타터 탬플릿입니다.
 라이트&다크 테마 변경과 다국어 현지화 언어셋을 사용할 수 있습니다.
 [Ajv](https://ajv.js.org/)가 포함되어 있으므로 데이터 구조의 유효성 검사는 [JSON schema](https://json-schema.org/) 형식을 사용하는 것을 권장합니다.
+
+## 시작하기
+
+아래 `create-remix` 커맨드로 신규 리믹스 프로젝트를 시작합니다.
+
+```bash
+npx create-remix@latest --template crispy43/remix-starter
+```
+
+내부적으로 Yarn 패키지 매니저를 사용하기 때문에, 두번째 `deps   Install dependencies with npm?` 질문에서 No를 선택하고 패키지를 yarn 커맨드로 수동 설치해야 합니다.
+
+```bash
+  deps   Install dependencies with npm?
+         No
+```
 
 ## 설치
 

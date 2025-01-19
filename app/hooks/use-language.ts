@@ -6,9 +6,7 @@ import { useFetcherCallback } from './use-fetcher-callback';
 
 export const useLanguage = () => {
   const { lang: language } = useRouteLoaderData<typeof rootLoader>('root');
-  const fetcher = useFetcherCallback(
-    ({ message }) => message && alert(new Error(message)),
-  );
+  const fetcher = useFetcherCallback(({ message }) => message && console.error(message));
 
   const setLanguage = (lang: string) => {
     fetcher.submit({ language: lang }, { action: '/api/language', method: 'post' });

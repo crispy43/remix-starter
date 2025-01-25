@@ -2,5 +2,9 @@
   "meta": {
     "title": "Remix",
     "description": "Remix is a modern web application framework for React."
+  },
+  "word": {
+    "theme": "theme",
+    "language": "language"
   }
 }

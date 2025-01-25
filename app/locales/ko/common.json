@@ -2,5 +2,9 @@
   "meta": {
     "title": "리믹스",
     "description": "리믹스는 React를 위한 현대적인 웹 애플리케이션 프레임워크입니다."
+  },
+  "word": {
+    "theme": "테마",
+    "language": "언어"
   }
 }

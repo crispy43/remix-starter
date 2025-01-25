@@ -10,7 +10,7 @@ import {
 
 import globalStyles from '~/styles/global.css?url';
 
-import { getLanguageSession, getThemeSession } from './.server/services/session';
+import { getLanguageSession, getThemeSession } from './.server/services/session.service';
 import { PreventFlashOnWrongTheme, ThemeProvider, useTheme } from './hooks/use-theme';
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {

@@ -1,8 +1,7 @@
 import { useFetcher } from '@remix-run/react';
 import { useEffect } from 'react';
 
-// * useFetcherCallback
-// useFetcher의 응답 데이터를 콜백으로 전달해 실행하는 래퍼 훅
+// * useFetcher의 응답 데이터를 콜백으로 전달해 실행하는 래퍼 훅
 export const useFetcherCallback = <T>(callback: (data: T) => void) => {
   const fetcher = useFetcher();
 

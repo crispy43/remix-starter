@@ -1,30 +1,37 @@
+import { ActionFunctionArgs } from '@remix-run/node';
 import { FromSchema } from 'json-schema-to-ts';
 
-import ajv from '~/lib/ajv';
-import { updateLanguageSchema } from '~/schemas/language';
+import { updateLanguageSchema } from '~/.server/schemas/language';
+import { replaceT } from '~/lib/utils';
 
-import { isLanguage } from '../lib/localization';
-import { invalidError, json, parseFormData } from '../lib/utils';
-import { getLanguageSession } from '../services/session';
+import { InvalidException, MethodNotAllowedException } from '../lib/exception';
+import { isLanguage, localizedError } from '../lib/localization';
+import { validateFormData } from '../lib/utils';
+import { getLanguageSession } from '../services/session.service';
 
-export const updateLanguage = async (request: Request) => {
-  const languageSession = await getLanguageSession(request);
-  const payload = await parseFormData<FromSchema<typeof updateLanguageSchema>>(request);
-  const validate = ajv.compile(updateLanguageSchema);
-  const valid = validate(payload);
-  if (!valid) {
-    return invalidError(validate.errors!);
+export const languageAction = async ({ request }: ActionFunctionArgs) => {
+  switch (request.method) {
+    case 'POST': {
+      const payload = await validateFormData<FromSchema<typeof updateLanguageSchema>>(
+        request,
+        updateLanguageSchema,
+      );
+      if (!isLanguage(payload.language)) {
+        const t = await localizedError(request);
+        throw new InvalidException(
+          replaceT(t.invalid, { path: t.word.language, value: payload.language }),
+        );
+      }
+      const languageSession = await getLanguageSession(request);
+      languageSession.setLanguage(payload.language);
+      return new Response(null, {
+        status: 204,
+        headers: { 'Set-Cookie': await languageSession.commit() },
+      });
+    }
+
+    default: {
+      throw new MethodNotAllowedException();
+    }
   }
-  if (!isLanguage(payload.language)) {
-    return json(
-      { message: `language value of ${payload.language} is not a valid language.` },
-      { status: 400 },
-    );
-  }
-  languageSession.setLanguage(payload.language);
-
-  return new Response(null, {
-    status: 204,
-    headers: { 'Set-Cookie': await languageSession.commit() },
-  });
 };

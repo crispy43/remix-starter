@@ -1,7 +1,7 @@
 import { ActionFunctionArgs } from '@remix-run/node';
 
-import { updateTheme } from '~/.server/controllers/theme.controller';
+import { themeAction } from '~/.server/controllers/theme.controller';
 
-export const action = async ({ request }: ActionFunctionArgs) => {
-  return updateTheme(request);
+export const action = async (args: ActionFunctionArgs) => {
+  return themeAction(args);
 };

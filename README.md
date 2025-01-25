@@ -136,11 +136,11 @@ export default function SomeComponent() {
 ```typescript
 import { LoaderFunctionArgs } from '@remix-run/node';
 
-import { toJson } from '~/.server/lib/localization';
+import { toJson } from '~/.server/lib/utils';
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
-  const t = await localize<WelcomeJson>(request, 'welcome');
-  return { t };
+  const data = await db.find();
+  return toJson({ data });
 };
 ```
 

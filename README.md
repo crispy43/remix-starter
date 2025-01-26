@@ -115,7 +115,7 @@ yarn start
 
 #### useJsonLoaderData, useJsonActionData
 
-리믹스의 `loader`와 `action` 라우트 함수는 서버사이드에서 작업을 처리하고 반환하는 데이터는 리액트 컴포넌트에서 [JSON.stringify()](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify) 처리한 것처럼 JSON화 되어 전달됩니다. Date 타입처럼 JSON에서 지원하지 않는 타입은 `toJSON()` 처리를 통한 결과 값으로 변환되어 전달되게 되게 됩니다. 기존 리믹스의 `useLoaderData`, `useActionData` 훅은 반환 데이터를 리액트 컴포넌트로 가져올 때, unknown 타입으로 처리 되는 등의 타입 미스매치 되는 경우가 제법 많습니다. `useJsonLoaderData`, `useJsonActionData` 훅은 기존 리믹스 훅을 대체하며 반환 데이터의 JSON 타입을 최대한 unknown처리 하지 않고 추론합니다. 반환 데이터의 타입 적용은 기존 리믹스 훅을 사용하는 것처럼 아래 코드처럼 `loader`와 `action` 타입을 제네릭으로 주입하면 됩니다.
+리믹스의 `loader`와 `action` 라우트 함수는 서버사이드에서 작업을 처리하고 반환하는 데이터는 리액트 컴포넌트에서 [JSON.stringify()](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify) 처리한 것처럼 JSON 직렬화하여 전달됩니다. Date 타입처럼 JSON에서 지원하지 않는 타입은 `toJSON()` 처리를 통한 결과 값으로 변환되어 전달됩니다. 기존 리믹스의 `useLoaderData`, `useActionData` 훅은 직렬화된 반환 데이터를 리액트 컴포넌트로 가져올 때, unknown 타입으로 처리 되는 등의 타입 미스매치 되는 경우가 제법 많습니다. `useJsonLoaderData`, `useJsonActionData` 훅은 기존 리믹스 훅을 대체하며 반환 데이터의 JSON 타입을 최대한 unknown 처리 하지 않고 추론합니다. 반환 데이터의 타입 적용은 기존 리믹스 훅을 사용하는 것과 동일하게 `loader`와 `action` 타입을 제네릭으로 주입하면 됩니다.
 
 ```tsx
 import { useJsonLoaderData } from '~/hooks/use-json-data';
@@ -131,17 +131,25 @@ export default function SomeComponent() {
 }
 ```
 
-리믹스의 `json` 함수가 최근 deprecated 되었습니다. 기존 `json` 함수를 대채하고 서버사이드에서 데이터를 반환할 때 JSON으로의 변환을 명시적으로 처리하는 `toJson` 유틸리티 함수를 사용하면 JSON 타입 추론을 보다 생략없이 처리할 수 있습니다. `toJson` 함수는 기존 `json` 함수 사용 방법과 동일하며 자체 `ToJson<T>` 유틸리티 타입을 통해 JSON 변환 타입을 추론합니다. `toJSON()` 프로토타입의 설정과 같은 방법으로 추가되는 JSON 타입이 있다면 `ToJson<T>` 타입에 예외처리를 추가하고 `toJson` 함수를 통해 데이터를 반환함으로써 보다 타입 안정성을 확보할 수 있습니다.
+리믹스의 `json` 함수가 최근 deprecated 되었습니다. 기존 `json` 함수를 대채하고 서버사이드에서 데이터를 반환할 때 JSON 직렬화 타입으로의 반환을 명시적으로 처리하는 `toJson` 유틸리티 함수를 사용하면 타입 추론을 보다 생략없이 처리할 수 있습니다. `toJson` 함수는 기존 `json` 함수의 사용 방법과 동일하며 자체 `ToJson<T>` 유틸리티 타입을 통해 JSON 직렬화된 타입을 추론합니다. `toJSON()` 프로토타입의 설정과 같은 방법으로 추가되는 JSON 타입이 있다면 `ToJson<T>` 타입에 예외처리를 추가하고 `toJson` 함수를 통해 데이터를 반환함으로써 리액트 컴포넌트에서 데이터 타입 안정성을 확보할 수 있습니다.
 
 ```typescript
 import { LoaderFunctionArgs } from '@remix-run/node';
-
 import { toJson } from '~/.server/lib/utils';
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
-  const data = await db.find();
+  const data = await mongoose.find();
   return toJson({ data });
 };
+```
+
+```typescript
+// /app/common/types.d.ts
+export type ToJson<T> = T extends string | number | boolean | null
+  // ...
+  : T extends Schema.Types.ObjectId
+  ? string // Mongoose ObjectId는 string으로 변환하도록 예외 추가
+  : // ...
 ```
 
 #### useFetcherCallback
@@ -191,7 +199,6 @@ i18n 관련 라이브러리를 사용하지 않지만, 본 프로젝트에서는
 
 ```typescript
 import { LoaderFunctionArgs } from '@remix-run/node';
-
 import { localize } from '~/.server/lib/localization';
 import { WelcomeJson } from '~/locales/types';
 

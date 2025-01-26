@@ -4,6 +4,7 @@ import { Params } from '@remix-run/react';
 import { ToJson } from '~/common/types';
 import ajv from '~/lib/ajv';
 
+import { DeferredData } from './defer';
 import { AjvInvalidException, HttpException } from './exception';
 
 // * ENV 가져오기
@@ -44,7 +45,8 @@ export const validateParams = (params: Params<string>, schema: any) => {
   return params;
 };
 
-// * JSON 응답 생성 (Remix에서 json 함수가 deprecated됨에 따라 대채용 JSON 확정 유틸 함수)
+// * JSON 타입 추론 응답 생성
+// Remix에서 json 함수가 deprecated됨에 따라 기존 함수 대채 및 JSON 직렬화 타입 추론
 export const toJson = <T = any>(data: T, options?: ResponseInit) => {
   return new Response(JSON.stringify(data), {
     ...options,
@@ -53,6 +55,12 @@ export const toJson = <T = any>(data: T, options?: ResponseInit) => {
       ...options?.headers,
     },
   }) as unknown as ToJson<T>;
+};
+
+// * JSON 타입 추론 지연 스트림 응답 생성
+// Remix에서 defer 함수가 deprecated됨에 따라 기존 함수 대채 및 JSON 직렬화 타입 추론
+export const typedDefer = <T = any>(data: T, options?: ResponseInit) => {
+  return new DeferredData(data as any, options) as unknown as ToJson<T>;
 };
 
 // * 컨트롤러 호출 및 에러 예외 처리

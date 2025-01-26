@@ -9,6 +9,8 @@ export type ToJson<T> = T extends string | number | boolean | null
   ? never // bigint는 반환하지 않음
   : T extends symbol
   ? never // symbol은 반환하지 않음
+  : T extends Promise<infer U>
+  ? Promise<ToJson<U>> // Promise의 반환 타입에 ToJson 적용
   : T extends ArrayBuffer | ArrayBufferView
   ? never // ArrayBuffer와 TypedArray는 직렬화되지 않음
   : T extends Map<any, any>

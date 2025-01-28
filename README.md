@@ -220,7 +220,7 @@ export type Login = FromSchema<typeof loginSchema>;
 // Login { email: string; password: string; }
 ```
 
-`/app/.server/lib/utils.ts` 경로의 `validate`, `validateFormData` 유틸리티 함수를 사용하면 `action`과 같은 서버 작업에서 파라미터 유효성 검사를 보다 간편하게 처리할 수 있습니다. `validateFormData`는 요청 받은 FormData를 JSON 스키마로 검증하고 검증에 성공할 경우 FormData를 객체로 변환하여 반환합니다. 검증에 실패한 경우는 `AjvInvalidException` 에러로 예외 처리됩니다.
+`/app/.server/lib/utils.ts`의 `validate`, `validateFormData`과 같은 유틸리티 함수를 사용하면 `action`과 같은 서버 작업에서 파라미터 유효성 검사를 보다 간편하게 처리할 수 있습니다. `validateFormData`는 요청 받은 FormData를 JSON 스키마로 검증하고 검증에 성공할 경우 FormData를 객체로 변환하여 반환합니다. 검증에 실패한 경우는 `AjvInvalidException` 에러로 예외 처리됩니다.
 
 ```tsx
 import { ActionFunctionArgs } from '@remix-run/node';
@@ -233,7 +233,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 };
 ```
 
-`AjvInvalidException`로 반환되는 에러메세지를 커스텀할 수 있습니다. JSON 스키마 정의할 때 `errorMessage`필드를 추가로 정의하면 됩니다.
+ajv의 기본 에러 메세지 템플릿을 사용하지 않고 에러 케이스 별로 메세지를 따로 반환하도록 할 수 있습니다. JSON 스키마 `errorMessage`필드에 각 조건 별 검증 에러메세지를 추가하면 됩니다.
 
 ```typescript
 export const loginSchema = {
@@ -268,6 +268,94 @@ export const loginSchema = {
   additionalProperties: false,
 } as const;
 ```
+
+`/app/.server/lib/utils.ts`의 `control` 함수를 사용하면 loader와 action 서버 처리 중 발생하는 에러를 `{ message: string; path: string; }` 형식의 일관된 json 데이터로 응답하도록 할 수 있습니다. 아래 코드처럼 `control` 함수로 action에 대한 처리 함수를 래핑하면 `message`와 `path` 값은 처리 중 에러가 발생할 때에 응답 데이터로 반환됩니다. `path` 값 비교로 어느 경로에서 발생한 에러인지 구분할 수 있습니다. `control` 함수는 `/app/.server/lib/exception.ts`의 커스텀 에러 예외들을 포함한 모든 에러를 `{ message: string; path: string; }` 구조의 json 형식으로 반환하도록 합니다.
+
+```tsx
+import { control } from '~/.server/lib/utils';
+
+const loginAction = async ({ request }: ActionFunctionArgs) => {
+  const { email, password } = await validateFormData<Login>(request, loginSchema);
+  // ...
+};
+
+export const action = async (args: ActionFunctionArgs) => {
+  return control(loginAction, args);
+};
+
+export default function SomeComponent() {
+  const data = useJsonActionData<typeof action>();
+  return (
+    <Form>
+      <input name="email" type="email" />
+      {data?.path === 'email' && data?.message && <p>{data.message}</p>}
+      <input name="password" type="password" />
+      {data?.path === 'password' && data?.message && <p>{data.message}</p>}
+      <button type="submit">로그인</button>
+    </Form>
+  );
+}
+```
+
+ajv 반환 에러 메세지에 다국어를 지원하려면 `errorMessage`의 에러 메세지는 키 값으로 사용하고 json 언어셋 파일에 키 값 별로 언어별 에러 메세지를 추가하면 됩니다.
+
+```typescript
+export const loginSchema = {
+  type: 'object',
+  properties: {
+    email: {
+      type: 'string',
+      format: 'email',
+      minLength: 6,
+      maxLength: 50,
+      description: '이메일',
+      errorMessage: {
+        format: 'emailFormatError',
+        minLength: 'emailMinLengthError',
+        maxLength: 'emailMaxLengthError',
+      },
+    },
+    // ...
+  },
+  // ...
+} as const;
+```
+
+```json
+{
+  "login": "로그인",
+  "emailFormatError": "이메일 형식이 올바르지 않습니다",
+  "emailMinLengthError": "이메일은 최소 6자 이상이어야 합니다",
+  "emailMaxLengthError": "이메일은 최대 50자 이하여야 합니다"
+}
+```
+
+```tsx
+export const loader = async ({ request }: LoaderFunctionArgs) => {
+  const t = await localize<LoginJson>(request, 'login');
+  return { t };
+};
+
+export const action = async (args: ActionFunctionArgs) => {
+  return control(loginAction, args);
+};
+
+export default function SomeComponent() {
+  const { t } = useJsonLoaderData<typeof loader>();
+  const data = useJsonActionData<typeof action>();
+  return (
+    <Form>
+      <input name="email" type="email" />
+      {data?.path === 'email' && data?.message && <p>{t[data.message]}</p>}
+      <input name="password" type="password" />
+      {data?.path === 'password' && data?.message && <p>{t[data.message]}</p>}
+      <button type="submit">{t.login}</button>
+    </Form>
+  );
+}
+```
+
+`localize` 함수를 사용한 다국어 현지화 번역 텍스트 적용에 대한 설명은 아래 [다국어 현지화](#다국어-현지화) 내용을 참고하세요.
 
 ### 다국어 현지화
 

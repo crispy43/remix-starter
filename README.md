@@ -62,7 +62,7 @@ yarn start
 
 ## 구조
 
-````plaintext
+```plaintext
 ├── .env.example            # 환경변수 예제
 ├── .eslintignore           # ES Lint 제외 파일
 ├── .eslintrc.cjs           # ES Lint 설정 파일
@@ -107,6 +107,7 @@ yarn start
 ├── tsconfig.json           # 타입스크립트 설정
 ├── vite.config.ts          # Vite 설정
 └── yarn.lock
+```
 
 ## 가이드
 
@@ -128,7 +129,7 @@ export default function SomeComponent() {
   const data = useJsonLoaderData<typeof loader>();
   // ...
 }
-````
+```
 
 리믹스의 `json` 함수가 최근 deprecated 되었습니다. 기존 `json` 함수를 대채하고 서버사이드에서 데이터를 반환할 때 JSON 직렬화 타입으로의 반환을 명시적으로 처리하는 `toJson` 유틸리티 함수를 사용하면 타입 추론을 보다 생략없이 처리할 수 있습니다. `toJson` 함수는 기존 `json` 함수의 사용 방법과 동일하며 자체 `ToJson<T>` 유틸리티 타입을 통해 JSON 직렬화된 타입을 추론합니다. `toJSON()` 프로토타입의 설정과 같은 방법으로 추가되는 JSON 타입이 있다면 `ToJson<T>` 타입에 예외처리를 추가하고 `toJson` 함수를 통해 데이터를 반환함으로써 리액트 컴포넌트에서 데이터 타입 안정성을 확보할 수 있습니다.
 
@@ -221,7 +222,7 @@ export type Login = FromSchema<typeof loginSchema>;
 
 `/app/.server/lib/utils.ts` 경로의 `validate`, `validateFormData` 유틸리티 함수를 사용하면 `action`과 같은 서버 작업에서 파라미터 유효성 검사를 보다 간편하게 처리할 수 있습니다. `validateFormData`는 요청 받은 FormData를 JSON 스키마로 검증하고 검증에 성공할 경우 FormData를 객체로 변환하여 반환합니다. 검증에 실패한 경우는 `AjvInvalidException` 에러로 예외 처리됩니다.
 
-```typescript
+```tsx
 import { ActionFunctionArgs } from '@remix-run/node';
 import { validateFormData } from '~/.server/lib/utils';
 import { Login, loginSchema } from '~/.server/schemas/user';
@@ -232,7 +233,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 };
 ```
 
-`AjvInvalidException`로 에러 예외 처리되는 경우 반환하는 에러메세지를 커스텀할 수 있습니다. JSON 스키마 정의할 때 `errorMessage`필드를 추가로 정의하면 됩니다.
+`AjvInvalidException`로 반환되는 에러메세지를 커스텀할 수 있습니다. JSON 스키마 정의할 때 `errorMessage`필드를 추가로 정의하면 됩니다.
 
 ```typescript
 export const loginSchema = {
@@ -266,56 +267,6 @@ export const loginSchema = {
   required: ['email', 'password'],
   additionalProperties: false,
 } as const;
-```
-
-`AjvInvalidException`의 반환 에러 메세지를 다국어로 지원하려면 에러 메세지를 키 값으로 사용하고 json 언어셋 파일에 언어 별로 예외처리 하면 됩니다.
-
-```typescript
-export const loginSchema = {
-  type: 'object',
-  properties: {
-    email: {
-      type: 'string',
-      format: 'email',
-      minLength: 6,
-      maxLength: 50,
-      description: '이메일',
-      errorMessage: {
-        format: 'emailFormatError',
-        minLength: 'emailMinLengthError',
-        maxLength: 'emailMaxLengthError',
-      },
-    },
-    // ...
-  },
-  // ...
-} as const;
-```
-
-```json
-{
-  "emailFormatError": "이메일 형식이 올바르지 않습니다",
-  "emailMinLengthError": "이메일은 최소 6자 이상이어야 합니다",
-  "emailMaxLengthError": "이메일은 최대 50자 이하여야 합니다"
-}
-```
-
-```tsx
-export const loader = async ({ request }: LoaderFunctionArgs) => {
-  const t = await localize<ErrorJson>(request, 'error');
-  return { t };
-};
-
-export const action = async ({ request }: ActionFunctionArgs) => {
-  const { email, password } = await validateFormData<Login>(request, loginSchema);
-  // ...
-};
-
-export default function SomeComponent() {
-  const { t } = useJsonLoaderData<typeof loader>();
-  const data = useJsonActionData<typeof action>();
-  return <p>{t[data?.message]}</p>;
-}
 ```
 
 ### 다국어 현지화

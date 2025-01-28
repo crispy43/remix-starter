@@ -1,6 +1,7 @@
 import { LoaderFunctionArgs, MetaFunction } from '@remix-run/node';
 
 import { localize } from '~/.server/lib/localization';
+import { WelcomeJson } from '~/.server/locales/types';
 import { Theme } from '~/common/constants';
 import { Button } from '~/components/ui/button';
 import { Card, CardContent, CardHeader } from '~/components/ui/card';
@@ -8,7 +9,6 @@ import { Label } from '~/components/ui/label';
 import { useJsonLoaderData } from '~/hooks/use-json-data';
 import { useLanguage } from '~/hooks/use-language';
 import { useTheme } from '~/hooks/use-theme';
-import { WelcomeJson } from '~/locales/types';
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const t = await localize<WelcomeJson>(request, 'welcome');

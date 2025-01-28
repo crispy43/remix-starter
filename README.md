@@ -62,7 +62,7 @@ yarn start
 
 ## 구조
 
-```plaintext
+````plaintext
 ├── .env.example            # 환경변수 예제
 ├── .eslintignore           # ES Lint 제외 파일
 ├── .eslintrc.cjs           # ES Lint 설정 파일
@@ -80,6 +80,10 @@ yarn start
 │   ├── .server             # Vite 서버사이드 전용 폴더
 │   │   ├── controllers     # Request&Response 컨트롤러
 │   │   ├── lib             # 유틸리티 (서버 사이드에서만 사용)
+│   │   ├── locales         # 다국어 언어셋 폴더
+│   │   │   ├── en          # 영어 네임스페이스 언어셋
+│   │   │   ├── ko          # 한국어 네임스페이스 언어셋
+│   │   │   └── types.d.ts  # 언어 JSON 파일 타입 정의
 │   │   ├── schemas         # 요청 파라미터 유효성 검증 JSON Schema
 │   │   └── services        # 서비스 로직
 │   ├── common              # 공통
@@ -89,10 +93,6 @@ yarn start
 │   ├── entry.server.tsx    # 리믹스 서버 렌더링
 │   ├── hooks               # 커스텀 훅
 │   ├── lib                 # 유틸리티
-│   ├── locales             # 다국어 언어셋 폴더
-│   │   ├── en              # 영어 네임스페이스 언어셋
-│   │   ├── ko              # 한국어 네임스페이스 언어셋
-│   │   └── types.d.ts      # 언어 JSON 파일 타입 정의
 │   ├── root.tsx            # 리믹스 Root 파일
 │   ├── routes              # 리믹스 Routes 폴더
 │   └── styles              # CSS 폴더
@@ -107,7 +107,6 @@ yarn start
 ├── tsconfig.json           # 타입스크립트 설정
 ├── vite.config.ts          # Vite 설정
 └── yarn.lock
-```
 
 ## 가이드
 
@@ -129,7 +128,7 @@ export default function SomeComponent() {
   const data = useJsonLoaderData<typeof loader>();
   // ...
 }
-```
+````
 
 리믹스의 `json` 함수가 최근 deprecated 되었습니다. 기존 `json` 함수를 대채하고 서버사이드에서 데이터를 반환할 때 JSON 직렬화 타입으로의 반환을 명시적으로 처리하는 `toJson` 유틸리티 함수를 사용하면 타입 추론을 보다 생략없이 처리할 수 있습니다. `toJson` 함수는 기존 `json` 함수의 사용 방법과 동일하며 자체 `ToJson<T>` 유틸리티 타입을 통해 JSON 직렬화된 타입을 추론합니다. `toJSON()` 프로토타입의 설정과 같은 방법으로 추가되는 JSON 타입이 있다면 `ToJson<T>` 타입에 예외처리를 추가하고 `toJson` 함수를 통해 데이터를 반환함으로써 리액트 컴포넌트에서 데이터 타입 안정성을 확보할 수 있습니다.
 
@@ -239,12 +238,12 @@ i18n 관련 라이브러리를 사용하지 않지만, 본 프로젝트에서는
 
 #### localize
 
-언어별 텍스트 정의는 `/app/locales/{languageCode}/` 경로에 JSON 파일로 저장하면 됩니다. 영어는 `/app/locales/en/`, 한국어는 `/app/locales/ko/` 아래에 JSON 파일을 저장하는 식입니다. `common.json`은 공통 언어 파일로 기본 네임스페이스가 되고 다른 네임스페이스에 언어 정의를 상속합니다. 이외 파일들은 각 파일 명으로 네임스페이스가 지정됩니다. 예를 들어 `welcome.json`파일은 네임스페이스가 `welcome`이 되므로 welcome 언어셋을 가져오려면 리믹스 `loader` 구문에서 아래 코드처럼 가져옵니다.
+언어별 텍스트 정의는 `/app/.server/locales/{languageCode}/` 경로에 JSON 파일로 저장하면 됩니다. 영어는 `/app/.server/locales/en/`, 한국어는 `/app/.server/locales/ko/` 아래에 JSON 파일을 저장하는 식입니다. `common.json`은 공통 언어 파일로 기본 네임스페이스가 되고 다른 네임스페이스에 언어 정의를 상속합니다. 이외 파일들은 각 파일 명으로 네임스페이스가 지정됩니다. 예를 들어 `welcome.json`파일은 네임스페이스가 `welcome`이 되므로 welcome 언어셋을 가져오려면 리믹스 `loader` 구문에서 아래 코드처럼 가져옵니다.
 
 ```typescript
 import { LoaderFunctionArgs } from '@remix-run/node';
 import { localize } from '~/.server/lib/localization';
-import { WelcomeJson } from '~/locales/types';
+import { WelcomeJson } from '~/.server/locales/types';
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const t = await localize<WelcomeJson>(request, 'welcome');
@@ -252,7 +251,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 };
 ```
 
-`localize()` 함수를 사용할 때, 위 코드처럼 `/app/locales/types.d.ts` 파일에 정의된 타입을 제네릭으로 주입하여 사용하는 언어셋 `t`의 타입 추론을 할 수 있습니다. JSON 언어 파일을 생성할 때 `/app/locales/types.d.ts`에 타입 정의도 함께 해주면 됩니다.
+`localize()` 함수를 사용할 때, 위 코드처럼 `/app/.server/locales/types.d.ts` 파일에 정의된 타입을 제네릭으로 주입하여 사용하는 언어셋 `t`의 타입 추론을 할 수 있습니다. JSON 언어 파일을 생성할 때 `types.d.ts`에 타입 정의도 함께 해주면 됩니다.
 
 ```json
 {
@@ -268,8 +267,8 @@ export type WelcomeJson = typeof import('../locales/en/welcome.json');
 화면에 언어 텍스트 적용 아래 코드처럼 `t`를 `useJsonLoaderData` 훅으로 가져와서 사용합니다.
 
 ```tsx
-// /app/locales/en/welcome.json = { "welcome": "Welcome to Remix!" }
-// /app/locales/ko/welcome.json = { "welcome": "Remix에 오신 것을 환영합니다!" }
+// /app/.server/locales/en/welcome.json = { "welcome": "Welcome to Remix!" }
+// /app/.server/locales/ko/welcome.json = { "welcome": "Remix에 오신 것을 환영합니다!" }
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const t = await localize<WelcomeJson>(request, 'welcome');

@@ -189,9 +189,53 @@ const [language, setLanguage] = useLanguage();
 
 `language`로 현재 적용된 언어 코드를 확인할 수 있습니다. 언어 변경은 `setLanguage('en')`처럼 변경할 언어 코드를 `setLanguage`함수의 인자로 사용하면 됩니다. 테마와 마찬가지로 세션에 영구 저장되므로 다음 접속 때도 동일한 언어 설정이 유지됩니다.
 
+### 유효성 검사
+
+유효성 검사는 [JSON schema](https://json-schema.org/) 형식과 [Ajv](https://ajv.js.org/)를 사용하면 하나의 JSON 스키마로 유효성 검사와 타입 추론이 모두 가능합니다. 작성된 JSON 스키마는 [json-schema-to-ts](https://github.com/ThomasAribart/json-schema-to-ts)의 `FromSchema`를 사용하면 JSON 스키마의 검증 타입으로 추론됩니다. `/app/.server/schemas/` 경로에 아래 코드처럼 JSON 스키마와 타입 선언 파일을 생성해 사용합니다. `FromSchema`의 사용은 제네릭에 정의한 JSON 스키마를 `typeof`로 타입 적용하면 됩니다.
+
+```typescript
+export const loginSchema = {
+  type: 'object',
+  properties: {
+    email: {
+      type: 'string',
+      format: 'email',
+      minLength: 6,
+      maxLength: 50,
+      description: '이메일',
+    },
+    password: {
+      type: 'string',
+      minLength: 8,
+      maxLength: 20,
+      pattern: '^(?=.*[A-Za-z])(?=.*\\d)(?=.*[!@#$%^&*])[A-Za-z\\d!@#$%^&*]{8,20}$',
+      description: '비밀번호',
+    },
+  },
+  required: ['email', 'password'],
+  additionalProperties: false,
+} as const;
+
+export type Login = FromSchema<typeof loginSchema>;
+// Login { email: string; password: string; }
+```
+
+`/app/.server/lib/utils.ts` 경로의 `validate`, `validateFormData` 유틸리티 함수를 사용하면 `action`과 같은 서버 작업에서 파라미터 유효성 검사를 보다 간편하게 처리할 수 있습니다. `validateFormData`는 요청 받은 FormData를 JSON 스키마로 검증하고 검증에 성공할 경우 FormData를 객체로 변환하여 반환합니다. 검증에 실패한 경우는 `AjvInvalidException` 에러로 예외 처리됩니다.
+
+```typescript
+import { ActionFunctionArgs } from '@remix-run/node';
+import { validateFormData } from '~/.server/lib/utils';
+import { Login, loginSchema } from '~/.server/schemas/user';
+
+export const action = async ({ request }: ActionFunctionArgs) => {
+  const { email, password } = await validateFormData<Login>(request, loginSchema);
+  // ...
+};
+```
+
 ### 다국어 현지화
 
-i18n 관련 라이브러리를 사용하지 않지만, 본 프로젝트에서는 리믹스 프레임워크의 SSR 형태에 맞게 다국어 옵션을 사용할 수 있습니다. i18n을 사용하는 것과 유사하지만 번역 텍스트가 서버사이드에서만 렌더링되는 차이점이 있습니다.
+i18n 관련 라이브러리를 사용하지 않지만, 본 프로젝트에서는 리믹스 프레임워크의 SSR 형태에 맞게 다국어 옵션을 사용할 수 있습니다. i18n을 사용하는 것과 유사하지만 번역 텍스트가 서버사이드에서 먼저 렌더링되는 차이점이 있습니다.
 
 #### localize
 

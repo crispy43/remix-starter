@@ -1,7 +1,6 @@
 import { ActionFunctionArgs } from '@remix-run/node';
-import { FromSchema } from 'json-schema-to-ts';
 
-import { updateLanguageSchema } from '~/.server/schemas/language';
+import { UpdateLanguage, updateLanguageSchema } from '~/.server/schemas/language';
 import { replaceT } from '~/lib/utils';
 
 import { InvalidException, MethodNotAllowedException } from '../lib/exception';
@@ -12,7 +11,7 @@ import { getLanguageSession } from '../services/session.service';
 export const languageAction = async ({ request }: ActionFunctionArgs) => {
   switch (request.method) {
     case 'POST': {
-      const payload = await validateFormData<FromSchema<typeof updateLanguageSchema>>(
+      const payload = await validateFormData<UpdateLanguage>(
         request,
         updateLanguageSchema,
       );

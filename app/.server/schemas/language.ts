@@ -2,6 +2,8 @@
 // https://github.com/ThomasAribart/json-schema-to-ts#readme
 // https://ajv.js.org/
 
+import { FromSchema } from 'json-schema-to-ts';
+
 export const updateLanguageSchema = {
   type: 'object',
   properties: {
@@ -13,3 +15,5 @@ export const updateLanguageSchema = {
   required: ['language'],
   additionalProperties: false,
 } as const;
+
+export type UpdateLanguage = FromSchema<typeof updateLanguageSchema>;

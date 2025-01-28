@@ -232,6 +232,92 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 };
 ```
 
+`AjvInvalidException`로 에러 예외 처리되는 경우 반환하는 에러메세지를 커스텀할 수 있습니다. JSON 스키마 정의할 때 `errorMessage`필드를 추가로 정의하면 됩니다.
+
+```typescript
+export const loginSchema = {
+  type: 'object',
+  properties: {
+    email: {
+      type: 'string',
+      format: 'email',
+      minLength: 6,
+      maxLength: 50,
+      description: '이메일',
+      errorMessage: {
+        format: '이메일 형식이 올바르지 않습니다',
+        minLength: '이메일은 최소 6자 이상이어야 합니다',
+        maxLength: '이메일은 최대 50자 이하여야 합니다',
+      },
+    },
+    password: {
+      type: 'string',
+      minLength: 8,
+      maxLength: 20,
+      pattern: '^(?=.*[A-Za-z])(?=.*\\d)(?=.*[!@#$%^&*])[A-Za-z\\d!@#$%^&*]{8,20}$',
+      description: '비밀번호',
+      errorMessage: {
+        minLength: '비밀번호는 최소 8자 이상이어야 합니다',
+        maxLength: '비밀번호는 최대 20자 이하여야 합니다',
+        pattern: '비밀번호는 영문, 숫자, 특수문자를 포함해야 합니다',
+      },
+    },
+  },
+  required: ['email', 'password'],
+  additionalProperties: false,
+} as const;
+```
+
+`AjvInvalidException`의 반환 에러 메세지를 다국어로 지원하려면 에러 메세지를 키 값으로 사용하고 json 언어셋 파일에 언어 별로 예외처리 하면 됩니다.
+
+```typescript
+export const loginSchema = {
+  type: 'object',
+  properties: {
+    email: {
+      type: 'string',
+      format: 'email',
+      minLength: 6,
+      maxLength: 50,
+      description: '이메일',
+      errorMessage: {
+        format: 'emailFormatError',
+        minLength: 'emailMinLengthError',
+        maxLength: 'emailMaxLengthError',
+      },
+    },
+    // ...
+  },
+  // ...
+} as const;
+```
+
+```json
+{
+  "emailFormatError": "이메일 형식이 올바르지 않습니다",
+  "emailMinLengthError": "이메일은 최소 6자 이상이어야 합니다",
+  "emailMaxLengthError": "이메일은 최대 50자 이하여야 합니다"
+}
+```
+
+```tsx
+export const loader = async ({ request }: LoaderFunctionArgs) => {
+  const t = await localize<ErrorJson>(request, 'error');
+  return { t };
+};
+
+export const action = async ({ request }: ActionFunctionArgs) => {
+  const { email, password } = await validateFormData<Login>(request, loginSchema);
+  // ...
+};
+
+export default function SomeComponent() {
+  const { t } = useJsonLoaderData<typeof loader>();
+  const data = useJsonActionData<typeof action>();
+  return <p>{t[data?.message]}</p>;
+}
+```
+
 ### 다국어 현지화
 
 i18n 관련 라이브러리를 사용하지 않지만, 본 프로젝트에서는 리믹스 프레임워크의 SSR 형태에 맞게 다국어 옵션을 사용할 수 있습니다. i18n을 사용하는 것과 유사하지만 번역 텍스트가 서버사이드에서 먼저 렌더링되는 차이점이 있습니다.

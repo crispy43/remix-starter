@@ -29,7 +29,7 @@ export class InvalidException extends HttpException {
 export class AjvInvalidException extends HttpException {
   constructor(errors: ErrorObject[]) {
     const path = errors[0].instancePath.replace(/^\//, '');
-    super(400, `${path} ${errors[0].message}`, path);
+    super(400, errors[0].message, path);
     if (Error.captureStackTrace) {
       Error.captureStackTrace(this, this.constructor);
     }

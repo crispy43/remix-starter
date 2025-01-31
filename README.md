@@ -165,6 +165,22 @@ export default function SomeComponent() {
 }
 ```
 
+`useFetcherCallback`의 응답 데이터 타입 추론은 `useJsonLoaderData` 또는 `userJsonActionData`에서의 타입 추론 방법과 같습니다.
+
+```tsx
+import { useFetcherCallback } from '~/hooks/use-fetcher-callback';
+
+export const action = async ({ params }: LoaderFunctionArgs) => {
+  const user = { name: params.name };
+  return toJson({ user });
+};
+
+export default function SomeComponent() {
+  const fetcher = useFetcherCallback<typeof action>((data) => console.log(data)); // { user: { name: string; } }
+  // ...
+}
+```
+
 #### useTheme
 
 현재 테마의 확인과 테마를 변경할 수 있는 훅입니다.

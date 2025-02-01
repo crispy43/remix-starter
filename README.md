@@ -443,7 +443,7 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
   const id = params.id;
   if (id !== 'someId') {
     const t = await localize<ErrorJson>(request, 'error');
-    throw new InvalidException(replaceT(t.invalid, { path: t.word.language, value: id }));
+    throw new InvalidException(replaceT(t.invalid, { path: t.word.id, value: id }));
   }
   // ...
 };

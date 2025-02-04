@@ -1,5 +1,5 @@
 {
-  "invalid": "{value} is not a valid {path}",
-  "alreadyExists": "{value} already exists",
-  "notFound": "{value} not found"
+  "invalid": "{{value}} is not a valid {{path}}",
+  "alreadyExists": "{{value}} already exists",
+  "notFound": "{{value}} not found"
 }

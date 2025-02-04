@@ -1,5 +1,5 @@
 {
-  "invalid": "{value}는 올바르지 않은 {path}입니다",
-  "alreadyExists": "{value}가 이미 존재합니다",
-  "notFound": "{value}가 존재하지 않습니다"
+  "invalid": "{{value}}는 올바르지 않은 {{path}}입니다",
+  "alreadyExists": "{{value}}가 이미 존재합니다",
+  "notFound": "{{value}}가 존재하지 않습니다"
 }
